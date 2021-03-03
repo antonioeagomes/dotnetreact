@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
-using MediatR;
 using Application.Activities;
 
 namespace API.Controllers
@@ -14,25 +11,34 @@ namespace API.Controllers
     {
         /* Injetar o Mediator na controller, em vez do DataContext */
         // private readonly DataContext _context;
-
-        private readonly IMediator _mediator;
-        public ActivitiesController(IMediator mediator)  //(DataContext context)
-        {
-            // _context = context;
-            _mediator = mediator;
-        }
-        
+        /*
+         * Remover o construtor para incluir a injeção 
+         * de dependencia na clase base
+        */
         [HttpGet]
         public async Task<ActionResult<List<Activity>>> GetActivities()
         {
             // return await _context.Activities.ToListAsync();
-            return await _mediator.Send(new List.Query());
+            return await Mediator.Send(new List.Query());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Activity>> GetActivity(Guid id)
         {
-            return Ok();
+            return await Mediator.Send(new Details.Query { Id = id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateActivity(Activity activity)
+        {
+            return Ok(await Mediator.Send(new Create.Command { Activity = activity }));
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditActivity(Guid id, Activity activity)
+        {
+            activity.Id = id;
+            return Ok(await Mediator.Send(new Edit.Command { Activity = activity }));
         }
     }
 }
