@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Persistence;
+using Application.Core;
 
 namespace API
 {
@@ -52,6 +53,8 @@ namespace API
 
             // Incluindo a MediatR como serviço
             services.AddMediatR(typeof(List.Handler).Assembly);
+            services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
