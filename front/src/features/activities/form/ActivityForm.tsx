@@ -5,13 +5,21 @@ import { v4 as uuid } from "uuid";
 import { Button, Form, Segment } from "semantic-ui-react";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
 import { useStore } from "../../../app/stores/store";
+import ValidationErrors from "../../errors/ValidationErrors";
 import { Link } from "react-router-dom";
 
 export default observer(function ActivityForm() {
   const history = useHistory();
+  const [errors, setErrors] = useState(null);
   const { activityStore } = useStore();
-  const { createActivity, updateActivity, loadActivity, loading, loadingInitial } = activityStore;
-  const { id } = useParams<{id: string}>();
+  const {
+    createActivity,
+    updateActivity,
+    loadActivity,
+    loading,
+    loadingInitial,
+  } = activityStore;
+  const { id } = useParams<{ id: string }>();
   const [activity, setActivity] = useState({
     id: "",
     title: "",
@@ -23,8 +31,8 @@ export default observer(function ActivityForm() {
   });
 
   useEffect(() => {
-    if (id) loadActivity(id).then(activity => setActivity(activity!))
-  }, [id, loadActivity]);  
+    if (id) loadActivity(id).then((activity) => setActivity(activity!));
+  }, [id, loadActivity]);
 
   function handleSubmit() {
     if (activity.id.length === 0) {
@@ -32,13 +40,17 @@ export default observer(function ActivityForm() {
         ...activity,
         id: uuid(),
       };
-      createActivity(newActivity).then(() => {
-        history.push(`/activities/${newActivity.id}`);
-      });
+      createActivity(newActivity)
+        .then(() => {
+          history.push(`/activities/${newActivity.id}`);
+        })
+        .catch((err) => setErrors(err));
     } else {
-      updateActivity(activity).then(() => {
-        history.push(`/activities/${activity.id}`);
-      });
+      updateActivity(activity)
+        .then(() => {
+          history.push(`/activities/${activity.id}`);
+        })
+        .catch((err) => setErrors(err));
     }
   }
 
@@ -49,7 +61,8 @@ export default observer(function ActivityForm() {
     setActivity({ ...activity, [name]: value });
   }
 
-  if (loadingInitial) return <LoadingComponent content={'Loading activity...'} />
+  if (loadingInitial)
+    return <LoadingComponent content={"Loading activity..."} />;
 
   return (
     <Segment clearing>
@@ -100,12 +113,13 @@ export default observer(function ActivityForm() {
         />
         <Button
           as={Link}
-          to='/activities'
+          to="/activities"
           floated="right"
           type="button"
           content="Cancel"
         />
       </Form>
+      {errors && <ValidationErrors errors={errors} />}
     </Segment>
   );
 });
