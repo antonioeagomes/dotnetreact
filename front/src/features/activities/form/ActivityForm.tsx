@@ -2,11 +2,17 @@ import { observer } from "mobx-react-lite";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router";
 import { v4 as uuid } from "uuid";
-import { Button, Form, Segment } from "semantic-ui-react";
+import { Button, Segment } from "semantic-ui-react";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
 import { useStore } from "../../../app/stores/store";
 import ValidationErrors from "../../errors/ValidationErrors";
 import { Link } from "react-router-dom";
+import { Formik, Form } from "formik";
+import MyTextInput from "../../../app/common/form/MyTextInput";
+import MyTextArea from '../../../app/common/form/MyTextArea';
+import MySelectInput from '../../../app/common/form/MySelectInput';
+import { categoryOptions } from '../../../app/common/options/categoryOptions'
+import * as Yup from "yup";
 
 export default observer(function ActivityForm() {
   const history = useHistory();
@@ -28,6 +34,15 @@ export default observer(function ActivityForm() {
     category: "",
     city: "",
     venue: "",
+  });
+
+  const validationSchema = Yup.object({
+    title: Yup.string().required(),
+    description: Yup.string().required(),
+    categoty: Yup.string().required(),
+    date: Yup.string().required(),
+    city: Yup.string().required(),
+    venue: Yup.string().required(),
   });
 
   useEffect(() => {
@@ -54,7 +69,7 @@ export default observer(function ActivityForm() {
     }
   }
 
-  function handleInputChange(
+  function handleChange(
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value } = event.target;
@@ -66,59 +81,39 @@ export default observer(function ActivityForm() {
 
   return (
     <Segment clearing>
-      <Form onSubmit={handleSubmit} autoComplete="off">
-        <Form.Input
-          placeholder="Title"
-          name="title"
-          value={activity.title}
-          onChange={handleInputChange}
-        />
-        <Form.TextArea
-          placeholder="Description"
-          name="description"
-          value={activity.description}
-          onChange={handleInputChange}
-        />
-        <Form.Input
-          placeholder="Category"
-          name="category"
-          value={activity.category}
-          onChange={handleInputChange}
-        />
-        <Form.Input
-          type="date"
-          placeholder="Date"
-          name="date"
-          value={activity.date}
-          onChange={handleInputChange}
-        />
-        <Form.Input
-          placeholder="City"
-          name="city"
-          value={activity.city}
-          onChange={handleInputChange}
-        />
-        <Form.Input
-          placeholder="Venue"
-          name="venue"
-          value={activity.venue}
-          onChange={handleInputChange}
-        />
-        <Button
-          loading={loading}
-          floated="right"
-          positive
-          type="submit"
-          content="Save"
-        />
-        <Button
-          as={Link}
-          to="/activities"
-          floated="right"
-          type="button"
-          content="Cancel"
-        />
-      </Form>
+      <Formik
+        validationSchema={validationSchema}
+        enableReinitialize
+        initialValues={activity}
+        onSubmit={(v) => {
+          console.log(v);
+        }}
+      >
+        {({ handleSubmit }) => (
+          <Form className="ui form" onSubmit={handleSubmit} autoComplete="off">
+            <MyTextInput name="title" placeholder="Title" />
+            <MyTextArea name="description" placeholder="Description" rows={4} />
+            <MySelectInput options={categoryOptions} name="category" placeholder="Category" />
+            <MyTextInput name="date" placeholder="Date"/>
+            <MyTextInput name="city" placeholder="City"/>
+            <MyTextInput name="venue" placeholder="Venue" />
+            <Button
+              loading={loading}
+              floated="right"
+              positive
+              type="submit"
+              content="Save"
+            />
+            <Button
+              as={Link}
+              to="/activities"
+              floated="right"
+              type="button"
+              content="Cancel"
+            />
+          </Form>
+        )}
+      </Formik>
       {errors && <ValidationErrors errors={errors} />}
     </Segment>
   );
