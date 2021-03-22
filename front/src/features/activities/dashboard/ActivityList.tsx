@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { observer } from "mobx-react-lite";
 import React, { SyntheticEvent, useState } from "react";
 import { Link } from "react-router-dom";
@@ -25,7 +26,7 @@ export default observer(function ActivityList() {
           <Item key={activity.id}>
             <Item.Content>
               <Item.Header as="a">{activity.title}</Item.Header>
-              <Item.Meta>{activity.date}</Item.Meta>
+              <Item.Meta>{format(activity.date!, 'dd MMM yyyy hh:mm' )}</Item.Meta>
               <Item.Description>
                 <div>{activity.description}</div>
                 <div>
