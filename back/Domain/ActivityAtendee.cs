@@ -2,7 +2,7 @@ using System;
 
 namespace Domain
 {
-    public class ActivityAtendee
+    public class ActivityAttendee
     {
         public string AppUserId { get; set; }
         public AppUser AppUser { get; set; }

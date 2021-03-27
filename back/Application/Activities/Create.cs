@@ -40,13 +40,13 @@ namespace Application.Activities
             {
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == _userAccessor.GetUserName());
 
-                var atendee = new ActivityAtendee{
+                var Attendee = new ActivityAttendee{
                     AppUser = user,
                     Activity = request.Activity,
                     IsHost = true
                 };
 
-                request.Activity.Atendees.Add(atendee);
+                request.Activity.Attendees.Add(Attendee);
 
                 _context.Activities.Add(request.Activity);
 
