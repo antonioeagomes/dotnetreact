@@ -36,6 +36,7 @@ export default observer(function ActivityForm() {
     category: "",
     city: "",
     venue: "",
+    hostUsername: ""
   });
 
   const validationSchema = Yup.object({

@@ -1,5 +1,4 @@
 import { makeAutoObservable, runInAction } from "mobx";
-
 import { Activity } from "../models/activity";
 import agent from "../api/agent";
 
@@ -14,25 +13,41 @@ export default class ActivityStore {
     makeAutoObservable(this);
   }
 
+
+
   get activitiesByDate() {
-    return Array.from(this.activityRegistry.values()).sort(
-      (a, b) => a.date!.getTime() - b.date!.getTime()
-    );
+    return this.groupActivitiesByDate(Array.from(this.activityRegistry.values()))
   }
+
+  groupActivitiesByDate(activities: Activity[]) {
+    const sortedActivities = activities.sort(
+      (a, b) => a.date!.getTime() - b.date!.getTime()
+    )
+    return Object.entries(sortedActivities.reduce((activities, activity) => {
+      const date = activity.date!.toISOString().split('T')[0];
+      activities[date] = activities[date] ? [...activities[date], activity] : [activity];
+      return activities;
+    }, {} as { [key: string]: Activity[] }));
+  }
+
+
 
   loadActivities = async () => {
     this.setLoadingInitial(true);
     try {
       const activities = await agent.Activities.list();
-
-      activities.forEach((a) => {
-        this.setActivity(a);
-      });
+      runInAction(() => {
+        activities.forEach((a) => {
+          a.date = new Date(a.date!);
+          this.activityRegistry.set(a.id, a);
+        });
+      });      
       this.setLoadingInitial(false);
+      console.log(this.groupActivitiesByDate(activities))
     } catch (error) {
       console.log(error);
       this.setLoadingInitial(false);
-    }
+    }    
   };
 
   loadActivity = async (id: string) => {
@@ -84,7 +99,7 @@ export default class ActivityStore {
 
   createActivity = async (activity: Activity) => {
     this.setLoading(true);
-    
+
     try {
       await agent.Activities.create(activity);
       runInAction(() => {

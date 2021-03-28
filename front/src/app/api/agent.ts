@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { history } from "../..";
 import { Activity } from "../models/activity";
+import { User, UserFormValues } from "../models/user";
 import { store } from "../stores/store";
 
 const sleep = (delay: number) => {
@@ -11,6 +12,12 @@ const sleep = (delay: number) => {
 };
 
 axios.defaults.baseURL = "http://localhost:5000/api";
+
+axios.interceptors.request.use(config => {
+  const token = store.commonStore.token;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+})
 
 axios.interceptors.response.use(
   async (response) => {
@@ -26,15 +33,15 @@ axios.interceptors.response.use(
           history.push('/not-found')
         }
         if (data.errors) {
-            const modalStateErrors = [];
-            for (const key in data.errors) {
-                if (data.errors[key]) {
-                    modalStateErrors.push(data.errors[key])
-                }
+          const modalStateErrors = [];
+          for (const key in data.errors) {
+            if (data.errors[key]) {
+              modalStateErrors.push(data.errors[key])
             }
-            throw modalStateErrors.flat();
+          }
+          throw modalStateErrors.flat();
         } else {
-            toast.error("Bad Request: " + data);
+          toast.error("Bad Request: " + data);
         }
         break;
       case 401:
@@ -74,8 +81,15 @@ const Activities = {
   delete: (id: string) => requests.delete<void>(`/activities/${id}`),
 };
 
+const Account = {
+  current: () => requests.get<User>('/account'),
+  login: (user: UserFormValues) => requests.post<User>('/account/login', user),
+  register: (user: UserFormValues) => requests.post<User>('/account/register', user),
+}
+
 const agent = {
   Activities,
+  Account
 };
 
 export default agent;
