@@ -18,7 +18,7 @@ namespace API.Controllers
          * de dependencia na clase base
         */
         [HttpGet]
-        public async Task<IActionResult> GetActivities([FromQuery] PagingParams param)
+        public async Task<IActionResult> GetActivities([FromQuery] ActivityParams param)
         {
             // return await _context.Activities.ToListAsync();
             return HandlePagedResult(await Mediator.Send(new List.Query
