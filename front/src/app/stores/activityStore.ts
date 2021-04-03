@@ -15,8 +15,6 @@ export default class ActivityStore {
     makeAutoObservable(this);
   }
 
-
-
   get activitiesByDate() {
     return this.groupActivitiesByDate(Array.from(this.activityRegistry.values()))
   }
@@ -200,5 +198,8 @@ export default class ActivityStore {
     finally{
       runInAction(() => this.loading = false)
     }
+  }
+  clearSelectedActivity = () => {
+    this.selectedActivity = undefined;
   }
 }
