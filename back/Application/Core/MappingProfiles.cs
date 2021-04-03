@@ -24,6 +24,11 @@ namespace Application.Core
             CreateMap<Comment, CommentDTO>()
                 .ForMember(d => d.DisplayName, o => o.MapFrom(s => s.Author.DisplayName))
                 .ForMember(d => d.Username, o => o.MapFrom(s => s.Author.UserName));
+            
+            CreateMap<AppUser, Profiles.Profile>()
+                .ForMember(d => d.FollowersCount, o => o.MapFrom(s => s.Followers.Count))
+                .ForMember(d => d.FollowingsCount, o => o.MapFrom(s => s.Followings.Count));
+                
         }
     }
 }
