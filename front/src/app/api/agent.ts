@@ -88,9 +88,14 @@ const Account = {
   register: (user: UserFormValues) => requests.post<User>('/account/register', user),
 }
 
+const Profiles = {
+  updateFollowing: (username: string) => requests.post(`/follow/${username}`, {})
+}
+
 const agent = {
   Activities,
-  Account
+  Account,
+  Profiles
 };
 
 export default agent;
