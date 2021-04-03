@@ -1,8 +1,9 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { Activity, ActivityFormValues} from "../models/activity";
+import { Activity, ActivityFormValues } from "../models/activity";
 import agent from "../api/agent";
 import { store } from "./store";
 import { Profile } from "../models/profile";
+import { Pagination, PagingParams } from "../models/pagination";
 
 export default class ActivityStore {
   activityRegistry = new Map<string, Activity>();
@@ -10,9 +11,23 @@ export default class ActivityStore {
   editMode = false;
   loading = false;
   loadingInitial = false;
+  pagination: Pagination | null = null;
+  pagingParams = new PagingParams();
+
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  setPagingParams = (pagingParams: PagingParams) => {
+    this.pagingParams = pagingParams;
+  }
+
+  get axiosParams() {
+    const params = new URLSearchParams();
+    params.append('pageNumber', this.pagingParams.pageNumber.toString());
+    params.append('pageSize', this.pagingParams.pageSize.toString());
+    return params;
   }
 
   get activitiesByDate() {
@@ -35,20 +50,21 @@ export default class ActivityStore {
   loadActivities = async () => {
     this.setLoadingInitial(true);
     try {
-      const activities = await agent.Activities.list();
-      runInAction(() => {
-        activities.forEach((a) => {
-          a.date = new Date(a.date!);
-          this.activityRegistry.set(a.id, a);
-        });
+      const result = await agent.Activities.list(this.axiosParams);
+      result.data.forEach((a) => {
+        this.setActivity(a)
       });
+      this.setPagination(result.pagination);
       this.setLoadingInitial(false);
-      console.log(this.groupActivitiesByDate(activities))
     } catch (error) {
       console.log(error);
       this.setLoadingInitial(false);
     }
   };
+
+  setPagination = (pagination: Pagination) => {
+    this.pagination = pagination;
+  }
 
   loadActivity = async (id: string) => {
     let activity = this.getActivity(id);
@@ -128,8 +144,8 @@ export default class ActivityStore {
     try {
       await agent.Activities.update(activity);
       runInAction(() => {
-        if(activity.id){
-          let updatedActivity = {...this.getActivity(activity.id), ...activity}
+        if (activity.id) {
+          let updatedActivity = { ...this.getActivity(activity.id), ...activity }
           this.activityRegistry.set(activity.id, updatedActivity as Activity);
           this.selectedActivity = updatedActivity as Activity;
         }
@@ -195,7 +211,7 @@ export default class ActivityStore {
     } catch (error) {
       console.log(error)
     }
-    finally{
+    finally {
       runInAction(() => this.loading = false)
     }
   }
@@ -211,7 +227,7 @@ export default class ActivityStore {
           attendee.following ? attendee.followersCount-- : attendee.followersCount++;
           attendee.following = !attendee.following;
         }
-      }) 
+      })
     })
   }
 }
