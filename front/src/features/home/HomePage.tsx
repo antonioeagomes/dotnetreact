@@ -23,7 +23,7 @@ export default observer(function HomePage() {
           Activities
         </Header>
 
-        {isLoggedIn /*&& user && token*/ ? (
+        {isLoggedIn && user && user.token ? (
           <>
             <Header as="h2" inverted content={`Welcome back `} />
             <Button as={Link} to="/activities" size="huge" inverted>

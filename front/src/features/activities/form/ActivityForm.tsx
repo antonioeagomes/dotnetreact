@@ -14,7 +14,7 @@ import MySelectInput from '../../../app/common/form/MySelectInput';
 import { categoryOptions } from '../../../app/common/options/categoryOptions'
 import * as Yup from "yup";
 import MyDateTimeInput from "../../../app/common/form/MyDateTimeInput";
-import { Activity } from "../../../app/models/activity";
+import { ActivityFormValues } from "../../../app/models/activity";
 
 export default observer(function ActivityForm() {
   const history = useHistory();
@@ -24,20 +24,10 @@ export default observer(function ActivityForm() {
     createActivity,
     updateActivity,
     loadActivity,
-    loading,
     loadingInitial,
   } = activityStore;
   const { id } = useParams<{ id: string }>();
-  const [activity, setActivity] = useState<Activity>({
-    id: "",
-    title: "",
-    date: null,
-    description: "",
-    category: "",
-    city: "",
-    venue: "",
-    hostUsername: ""
-  });
+  const [activity, setActivity] = useState<ActivityFormValues>(new ActivityFormValues());
 
   const validationSchema = Yup.object({
     title: Yup.string().required(),
@@ -49,11 +39,11 @@ export default observer(function ActivityForm() {
   });
 
   useEffect(() => {
-    if (id) loadActivity(id).then((activity) => setActivity(activity!));
+    if (id) loadActivity(id).then((activity) => setActivity(new ActivityFormValues(activity!)));
   }, [id, loadActivity]);
 
-  function handleFormSubmit(activity: Activity) {
-    if (activity.id.length === 0) {
+  function handleFormSubmit(activity: ActivityFormValues) {
+    if (!activity.id) {
       let newActivity = {
         ...activity,
         id: uuid(),
@@ -82,8 +72,8 @@ export default observer(function ActivityForm() {
         validationSchema={validationSchema}
         enableReinitialize
         initialValues={activity}
-        onSubmit={(v) => {
-          handleFormSubmit(v);
+        onSubmit={(values) => {
+          handleFormSubmit(values);
         }}
       >
         {({ handleSubmit, isValid, isSubmitting, dirty }) => (
@@ -103,7 +93,7 @@ export default observer(function ActivityForm() {
             <MyTextInput name="venue" placeholder="Venue" />
             <Button
               disabled={isSubmitting || !dirty || !isValid}
-              loading={loading}
+              loading={isSubmitting}
               floated="right"
               positive
               type="submit"
