@@ -8,11 +8,12 @@ import { Route, Switch, useLocation } from "react-router";
 import ActivityForm from "../../features/activities/form/ActivityForm";
 import ActivityDetails from "../../features/activities/details/ActivityDetails";
 import NotFound from "../../features/errors/NotFound";
-import ServerError from '../../features/errors/ServerError';
+import ServerError from "../../features/errors/ServerError";
 import { ToastContainer } from "react-toastify";
 import { useStore } from "../stores/store";
 import LoadingComponent from "./LoadingComponent";
-import ModalContainer from '../common/modals/ModalContainer';
+import ModalContainer from "../common/modals/ModalContainer";
+import PrivateRoute from "../layout/PrivateRoute";
 
 function App() {
   const location = useLocation();
@@ -22,11 +23,12 @@ function App() {
     if (commonStore.token) {
       userStore.getUser().finally(() => commonStore.setAppLoaded());
     } else {
-      commonStore.setAppLoaded()
+      commonStore.setAppLoaded();
     }
-  }, [commonStore, userStore])
+  }, [commonStore, userStore]);
 
-  if (!commonStore.appLoaded) return <LoadingComponent content='Loading app...'/>
+  if (!commonStore.appLoaded)
+    return <LoadingComponent content="Loading app..." />;
 
   return (
     <>
@@ -40,14 +42,21 @@ function App() {
             <NavBar />
             <Container style={{ marginTop: "7em" }}>
               <Switch>
-                <Route exact path="/activities" component={ActivityDashboard} />
-                <Route path="/activities/:id" component={ActivityDetails} />
-                <Route
+                <PrivateRoute
+                  exact
+                  path="/activities"
+                  component={ActivityDashboard}
+                />
+                <PrivateRoute
+                  path="/activities/:id"
+                  component={ActivityDetails}
+                />
+                <PrivateRoute
                   key={location.key}
                   path={["/createActivity", "/manage/:id"]}
                   component={ActivityForm}
                 />
-                <Route path='/server-error' component={ServerError} />
+                <PrivateRoute path="/server-error" component={ServerError} />
                 <Route component={NotFound} />
               </Switch>
             </Container>
